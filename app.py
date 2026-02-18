@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS   # ← ADDED
 import urllib3
 import requests
 import binascii
@@ -9,6 +10,11 @@ from Crypto.Util.Padding import pad
 import MajorLoginRes_pb2
 
 app = Flask(__name__)
+
+# ---------- ENABLE CORS (ADDED) ----------
+CORS(app)   # allows all origins, methods, headers
+# -----------------------------------------
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
@@ -107,7 +113,7 @@ def MajorLogin(access_token, open_id, game_version):
         "Expect": "100-continue",
         "X-Unity-Version": "2018.4.11f1",
         "X-GA": "v1 1",
-        "ReleaseVersion": game_version  # ← dynamic version
+        "ReleaseVersion": game_version
     }
 
     response = requests.post(url, headers=headers, data=payload, verify=False)
@@ -125,7 +131,7 @@ def get_jwt_token():
 
     uid = request.args.get("uid")
     password = request.args.get("password")
-    version = request.args.get("version")  # ← external version
+    version = request.args.get("version")
 
     if not uid or not password:
         return jsonify({"error": "UID and password are required"}), 400
@@ -146,7 +152,6 @@ def get_jwt_token():
     decoded_response = decode_protobuf(response)
     token = decoded_response.token
 
-    # decode jwt payload
     jwt_payload = decode_jwt_payload(token)
 
     account_info = None
